@@ -30,17 +30,23 @@ Terminal 4:  claudeops      -> @OpsBot       -> ~/projects/infra
 
 ## Quick Start
 
-**1. Install the plugin**
+**1. Install Bun** (required — channel plugins won't work without it)
+
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
+**2. Install the plugin**
 
 ```bash
 claude plugin add mukulkulkarni/solocrew
 ```
 
-**2. Create a Telegram bot**
+**3. Create a Telegram bot**
 
 Open Telegram, message [@BotFather](https://t.me/BotFather), and run `/newbot`. Copy the token it gives you.
 
-**3. Create a crew member**
+**4. Create a crew member**
 
 Inside any Claude Code session:
 
@@ -50,13 +56,13 @@ Inside any Claude Code session:
 
 Follow the interactive prompts — provide a name, purpose, project path, and your bot token.
 
-**4. Source your shell**
+**5. Source your shell**
 
 ```bash
 source ~/.zshrc    # or ~/.bashrc
 ```
 
-**5. DM your bot**
+**6. DM your bot**
 
 Open Telegram, find your bot by username, and send it a message. It responds via Claude Code.
 
@@ -112,7 +118,7 @@ claudedev-safe     # safe mode (asks before risky actions)
 
 - **Claude Code v2.1.80+** (channels support required)
 - **Telegram bot token** (from [@BotFather](https://t.me/BotFather))
-- **Bun runtime** (for channel plugins)
+- **Bun runtime** — required by channel plugins. Install: `curl -fsSL https://bun.sh/install | bash`. The Telegram plugin **silently fails** without Bun (Node.js won't work).
 - **claude.ai login** (API keys don't support channels)
 
 ## Manual Install
