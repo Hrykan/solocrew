@@ -127,7 +127,7 @@ Each bot's state lives in its own directory under `~/.claude/channels/`:
 Contains the Telegram bot token. This file is `chmod 600` (owner read/write only).
 
 ```
-TELEGRAM_BOT_TOKEN=7123456789:AAHxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TELEGRAM_BOT_TOKEN=<your-token-from-botfather>
 ```
 
 ### access.json

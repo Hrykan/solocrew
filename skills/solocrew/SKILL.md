@@ -88,7 +88,7 @@ When creating the first bot, detect the user's Telegram ID from existing `~/.cla
      2. Send /newbot
      3. Choose a display name (e.g., "My Dev Assistant")
      4. Choose a username ending in "bot" (e.g., "DevAssistBot")
-     5. BotFather replies with a token like: 123456789:AAHfiqksKZ8...
+     5. BotFather replies with a token like: &lt;token-from-botfather&gt;
      6. Copy the full token and run: /solocrew create <name> again
      ```
    - Validate token format: must match pattern `^\d+:[\w-]+$`
@@ -212,7 +212,7 @@ ops         claudeops   infra    Deployments & servers            @OpsBot
 ```
 BOT: devbot
 =============
-Token:       123456789:AA... (set)
+Token:       ********** (set)
 Directory:   ~/.claude/channels/crew-devbot/
 Bot:         @DevAssistBot
 Alias:       claudedev
