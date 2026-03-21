@@ -1,0 +1,6 @@
+{
+  "name": "solocrew",
+  "version": "1.0.0",
+  "description": "You're the CEO. They're your crew. Manage a fleet of AI agent bots for Claude Code — one bot per project, each a virtual employee accessible via Telegram.",
+  "skills": ["skills/solocrew/SKILL.md"]
+}
