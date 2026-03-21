@@ -94,7 +94,12 @@ When creating the first bot, detect the user's Telegram ID from existing `~/.cla
      ```
 
 2. **Validate name:**
-   - Must be lowercase alphanumeric + hyphens, 2-30 chars
+   - Must be lowercase alphanumeric + hyphens, 2-30 chars, starting with a letter or digit
+   - Before using `<name>` in ANY shell command, run this validation:
+     ```bash
+     [[ "<name>" =~ ^[a-z0-9][a-z0-9-]{1,29}$ ]] || { echo "Invalid name"; exit 1; }
+     ```
+     If validation fails, refuse and explain the naming rules.
    - Check registry for duplicates — if exists, refuse and suggest `<name>-2`
    - Check if directory `~/.claude/channels/crew-<name>/` already exists — if so, suggest `migrate` instead
 
@@ -115,6 +120,7 @@ When creating the first bot, detect the user's Telegram ID from existing `~/.cla
 4. **Ask for bot username** (the @username from BotFather, e.g., `@DevAssistBot`)
 
 5. **Ask for purpose/role description** (one line, e.g., "App development")
+   - Purpose must be a single line. Strip or reject newlines, semicolons, backticks, and `$()` patterns.
 
 6. **Ask for project directory** (optional):
    - Suggest current working directory as default
@@ -122,6 +128,8 @@ When creating the first bot, detect the user's Telegram ID from existing `~/.cla
 
 7. **Suggest alias:**
    - Default: `claude<name>` (e.g., `claudedev`)
+   - Validate alias matches: `^[a-z][a-z0-9-]*$`
+   - Reject aliases containing shell metacharacters (`;`, `|`, `&`, `$`, backticks, quotes, spaces, newlines).
    - Detect shell from `$SHELL` env var → determine RC file (`~/.zshrc` or `~/.bashrc`)
    - Read RC file and check for existing alias with same name — if conflict, suggest alternatives
    - Ask user to confirm or customize
@@ -136,6 +144,7 @@ When creating the first bot, detect the user's Telegram ID from existing `~/.cla
    a. Create directory:
    ```bash
    mkdir -p ~/.claude/channels/crew-<name>
+   chmod 700 ~/.claude/channels/crew-<name>
    ```
 
    b. Write `.env`:
@@ -173,21 +182,24 @@ When creating the first bot, detect the user's Telegram ID from existing `~/.cla
    e. Add aliases to shell RC file. Create TWO aliases per bot:
    ```bash
    # solocrew: <name> — <purpose>
-   alias <alias>='TELEGRAM_STATE_DIR=<expanded-dir> claude --channels plugin:telegram@claude-plugins-official --dangerously-skip-permissions'
-   alias <alias>-safe='TELEGRAM_STATE_DIR=<expanded-dir> claude --channels plugin:telegram@claude-plugins-official'
+   alias <alias>='TELEGRAM_STATE_DIR=<expanded-dir> claude --channels plugin:telegram@claude-plugins-official'
+   alias <alias>-auto='TELEGRAM_STATE_DIR=<expanded-dir> claude --channels plugin:telegram@claude-plugins-official --dangerously-skip-permissions'
    ```
 
    Where `<expanded-dir>` is the full path, e.g., `~/.claude/channels/crew-<name>`.
 
-   f. Update registry: add bot entry, add to group if specified.
+   f. Update registry: add bot entry, add to group if specified. After writing, apply:
+   ```bash
+   chmod 600 ~/.claude/channels/crew-registry.json
+   ```
 
 10. **Output summary:**
    ```
    Bot "<name>" created successfully!
 
    Directory:    ~/.claude/channels/crew-<name>/
-   Alias:        <alias>       (autonomous, skips permissions)
-   Safe alias:   <alias>-safe  (interactive, asks for approval)
+   Alias:        <alias>       (safe — asks before risky actions)
+   Auto alias:   <alias>-auto  (autonomous — no permission prompts)
    Bot:          <botUsername>
    Purpose:      <purpose>
    Project:      <project>
@@ -195,7 +207,7 @@ When creating the first bot, detect the user's Telegram ID from existing `~/.cla
 
    NEXT STEPS:
    1. Run: source ~/.zshrc
-   2. Open a new terminal and type: <alias>  (or <alias>-safe for interactive mode)
+   2. Open a new terminal and type: <alias>  (or <alias>-auto for autonomous mode)
    3. DM <botUsername> on Telegram — you'll get a pairing code
    4. In that session, run: /telegram:access pair <code>
    5. Your bot is ready!
@@ -254,14 +266,19 @@ Instructions:
    This will permanently delete:
    - Directory: ~/.claude/channels/crew-devbot/
    - Alias "claudedev" from ~/.zshrc
-   - Alias "claudedev-safe" from ~/.zshrc
+   - Alias "claudedev-auto" from ~/.zshrc
    - Registry entry for "devbot"
    - Group membership in "dev"
    ```
 3. **Ask for confirmation** using AskUserQuestion — require explicit "yes"
 4. If confirmed:
+   - Before running `rm -rf`, validate the path:
+     ```bash
+     resolved=$(realpath "<path>")
+     [[ "$resolved" == */.claude/channels/crew-* ]] || { echo "Invalid path — refusing to delete"; exit 1; }
+     ```
    - Remove directory: `rm -rf ~/.claude/channels/crew-<name>/`
-   - Remove both alias lines (the dangerous and safe variants) AND their comment from shell RC file
+   - Remove both alias lines (the default and `-auto` variants) AND their comment from shell RC file
    - Remove bot from registry
    - Remove bot from any group member lists
    - Confirm: `Bot "devbot" deleted. Run 'source ~/.zshrc' to update your shell.`
@@ -283,8 +300,8 @@ Adopt existing `~/.claude/channels/telegram/` into the registry.
 11. Update existing alias in shell RC file to include `TELEGRAM_STATE_DIR` explicitly:
     ```bash
     # solocrew: <name> — <purpose>
-    alias claudetg='TELEGRAM_STATE_DIR=~/.claude/channels/telegram claude --channels plugin:telegram@claude-plugins-official --dangerously-skip-permissions'
-    alias claudetg-safe='TELEGRAM_STATE_DIR=~/.claude/channels/telegram claude --channels plugin:telegram@claude-plugins-official'
+    alias claudetg='TELEGRAM_STATE_DIR=~/.claude/channels/telegram claude --channels plugin:telegram@claude-plugins-official'
+    alias claudetg-auto='TELEGRAM_STATE_DIR=~/.claude/channels/telegram claude --channels plugin:telegram@claude-plugins-official --dangerously-skip-permissions'
     ```
 12. Confirm: `Existing bot migrated as "<name>". Registry updated.`
 
@@ -353,7 +370,7 @@ HOW IT WORKS
 
   Each bot gets a pair of shell aliases like:
     alias claudedev='TELEGRAM_STATE_DIR=~/.claude/channels/crew-dev claude --channels ...'
-    alias claudedev-safe='TELEGRAM_STATE_DIR=~/.claude/channels/crew-dev claude --channels ...'
+    alias claudedev-auto='TELEGRAM_STATE_DIR=~/.claude/channels/crew-dev claude --channels ... --dangerously-skip-permissions'
 
   One terminal = one bot. Run different aliases in different terminals
   for parallel agents.
@@ -367,10 +384,9 @@ SETUP WORKFLOW
   6. /telegram:access pair <code>    → you're connected
 
 DAILY USE
-  Terminal 1:  claudedev      → devbot, app development (autonomous)
-  Terminal 2:  claudedev-safe → devbot, app development (interactive)
-  Terminal 3:  claudeops      → opsbot, deployments
-  Terminal 4:  claude         → Regular Claude Code, no bot
+  Terminal 1:  claudedev      → devbot (safe — asks before risky actions)
+  Terminal 2:  claudedev-auto → devbot (autonomous — no permission prompts)
+  Terminal 3:  claude         → Regular Claude Code, no bot
 
 COMMANDS
   /solocrew create <name>           Create a new bot channel

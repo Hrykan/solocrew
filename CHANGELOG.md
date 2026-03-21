@@ -11,7 +11,7 @@ Initial release.
 - `/solocrew migrate` — adopt existing default bot into registry
 - `/solocrew group create/add/list/delete` — organize bots into groups
 - `/solocrew help` — comprehensive usage guide
-- Dual aliases per bot: `<alias>` (autonomous) + `<alias>-safe` (with permissions)
+- Dual aliases per bot: `<alias>` (safe, default) + `<alias>-auto` (autonomous)
 - Central registry with versioned schema (`crew-registry.json`)
 - Allowlist-based access control
 - Telegram channel support (Discord planned for v1.1)

@@ -22,10 +22,10 @@ Code, Deploy, Research, Write
 ```
 
 ```
-Terminal 1:  claudedev      -> @DevBot       -> ~/projects/app
-Terminal 2:  claudewriter   -> @WriterBot    -> ~/projects/content
-Terminal 3:  clauderesearch -> @ResearchBot  -> ~/projects/market-intel
-Terminal 4:  claudeops      -> @OpsBot       -> ~/projects/infra
+Terminal 1:  claudedev           -> @DevBot       -> ~/projects/app        (safe mode)
+Terminal 2:  claudewriter-auto   -> @WriterBot    -> ~/projects/content    (autonomous)
+Terminal 3:  clauderesearch      -> @ResearchBot  -> ~/projects/market-intel (safe mode)
+Terminal 4:  claudeops-auto      -> @OpsBot       -> ~/projects/infra      (autonomous)
 ```
 
 ## Quick Start
@@ -39,7 +39,7 @@ curl -fsSL https://bun.sh/install | bash
 **2. Install the plugin**
 
 ```bash
-claude plugin add mukulkulkarni/solocrew
+claude plugin add Hrykan/solocrew
 ```
 
 **3. Create a Telegram bot**
@@ -69,8 +69,8 @@ Open Telegram, find your bot by username, and send it a message. It responds via
 To launch the bot session in your terminal:
 
 ```bash
-claudedev          # autonomous mode (no permission prompts)
-claudedev-safe     # safe mode (asks before risky actions)
+claudedev          # safe mode (asks before risky actions)
+claudedev-auto     # autonomous mode (no permission prompts)
 ```
 
 ## Commands Reference
@@ -103,8 +103,8 @@ claudedev-safe     # safe mode (asks before risky actions)
 **Registry** — All bots are tracked in `~/.claude/crew-registry.json`, a versioned JSON file that stores each bot's name, channel, purpose, project path, alias, group, and creation date.
 
 **Shell aliases** — Each bot gets two shell aliases injected into your `~/.zshrc` (or `~/.bashrc`):
-- `<alias>` — Autonomous mode with `--dangerously-skip-permissions`. For trusted, unattended bots.
-- `<alias>-safe` — Standard mode where Claude asks before risky actions. For interactive or sensitive work.
+- `<alias>` — Safe mode (default). Claude asks before risky actions. For interactive or sensitive work.
+- `<alias>-auto` — Autonomous mode with `--dangerously-skip-permissions`. For trusted, unattended bots.
 
 **Per-bot directories** — Each bot has its own directory at `~/.claude/channels/crew-<name>/` containing its `.env` (token), `access.json` (allowlist), and `instructions.md` (role description).
 
@@ -113,6 +113,35 @@ claudedev-safe     # safe mode (asks before risky actions)
 **Groups** — Bots can be organized into named groups (e.g., "dev", "content", "ops") for logical organization. Groups are labels today with automation planned for future versions.
 
 **instructions.md** — A reference file describing the bot's role and personality. It is not auto-injected into Claude sessions. To activate it, symlink or include it in your project's `CLAUDE.md`.
+
+## Security
+
+solocrew gives Telegram access to Claude Code sessions running on your machine. Understand the risks before deploying.
+
+### Trust Model
+
+- **You control access** via `access.json` allowlists. Only Telegram IDs you explicitly add can message your bots.
+- **Each bot is a full Claude Code session.** Anything Claude Code can do, your bot can do — read files, run commands, make network requests.
+- **Bots share the same OS user.** There is no sandboxing between bots. A compromised bot can access other bots' configs and tokens.
+
+### Safe vs Auto Aliases
+
+Every bot gets two aliases:
+
+| Alias | Mode | What it means |
+|-------|------|---------------|
+| `claudedev` | Safe (default) | Claude asks for confirmation before risky actions |
+| `claudedev-auto` | Autonomous | All commands execute without confirmation |
+
+**Use `-auto` only when you trust the bot to operate unattended.** If someone gains access to your Telegram account and your bot runs in auto mode, they can execute arbitrary commands on your machine.
+
+### Recommendations
+
+- Enable **Telegram two-factor authentication** on your account
+- Use the **safe alias** (default) unless you specifically need unattended operation
+- For high-security setups, run each bot under a **separate OS user** or in a **container**
+- Regularly audit your allowlists with `/solocrew status <name>`
+- Keep bot tokens secret — treat them like passwords
 
 ## Prerequisites
 
@@ -126,7 +155,7 @@ claudedev-safe     # safe mode (asks before risky actions)
 If you prefer not to use the plugin system:
 
 ```bash
-git clone https://github.com/mukulkulkarni/solocrew.git
+git clone https://github.com/Hrykan/solocrew.git
 mkdir -p ~/.claude/skills/solocrew
 cp solocrew/skills/solocrew/SKILL.md ~/.claude/skills/solocrew/SKILL.md
 ```
@@ -140,7 +169,7 @@ Then use `/solocrew` in any Claude Code session.
 - Telegram bot fleet management
 - Interactive bot creation with `/solocrew create`
 - Central registry with groups and version field
-- Dual aliases per bot: `<alias>` (autonomous) + `<alias>-safe` (with permission prompts)
+- Dual aliases per bot: `<alias>` (safe, default) + `<alias>-auto` (autonomous, skips permissions)
 - Shell aliases for one-command bot launch
 - Allowlist-based access control
 
@@ -191,7 +220,7 @@ For teams and businesses that want a managed agent fleet:
 
 Manual smoke test:
 
-1. Install the plugin: `claude plugin add mukulkulkarni/solocrew`
+1. Install the plugin: `claude plugin add Hrykan/solocrew`
 2. Run `/solocrew create test` — provide a test token and project path
 3. Verify the bot directory exists at `~/.claude/channels/crew-test/`
 4. Verify the shell alias was added to your shell config

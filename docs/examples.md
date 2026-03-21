@@ -108,8 +108,8 @@ claudefront       # Terminal 1 — autonomous mode
 claudeback        # Terminal 2
 claudeops         # Terminal 3
 
-# Or use safe mode for interactive work:
-claudefront-safe  # Asks before risky actions
+# Or use autonomous mode for unattended work:
+claudefront-auto  # No permission prompts
 ```
 
 ---

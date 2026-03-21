@@ -29,16 +29,16 @@ Each bot gets **two** shell aliases, written to the user's shell RC file during 
 
 ```bash
 # solocrew: devbot — App development
-alias claudedev='TELEGRAM_STATE_DIR=/home/user/.claude/channels/crew-devbot claude --channels plugin:telegram@claude-plugins-official --dangerously-skip-permissions'
-alias claudedev-safe='TELEGRAM_STATE_DIR=/home/user/.claude/channels/crew-devbot claude --channels plugin:telegram@claude-plugins-official'
+alias claudedev='TELEGRAM_STATE_DIR=/home/user/.claude/channels/crew-devbot claude --channels plugin:telegram@claude-plugins-official'
+alias claudedev-auto='TELEGRAM_STATE_DIR=/home/user/.claude/channels/crew-devbot claude --channels plugin:telegram@claude-plugins-official --dangerously-skip-permissions'
 ```
 
 ### The two variants
 
 | Alias | Flag | Behavior | Use when... |
 |-------|------|----------|-------------|
-| `claudedev` | `--dangerously-skip-permissions` | Full autonomy — no permission prompts | Running unattended, trusted tasks |
-| `claudedev-safe` | *(none)* | Interactive — Claude asks before risky actions | Sensitive work, new/untested bots |
+| `claudedev` | *(none)* | Interactive — Claude asks before risky actions | Default for all work, new/untested bots |
+| `claudedev-auto` | `--dangerously-skip-permissions` | Full autonomy — no permission prompts | Running unattended, trusted tasks only |
 
 ### Shell detection
 
@@ -98,7 +98,7 @@ The central registry lives at `~/.claude/channels/crew-registry.json`. It tracks
 | `bots.<name>.dir` | string | Absolute path to the bot's state directory |
 | `bots.<name>.purpose` | string | Human-readable role description |
 | `bots.<name>.project` | string | Absolute path to the project this bot works on |
-| `bots.<name>.alias` | string | The base alias name (safe variant is `<alias>-safe`) |
+| `bots.<name>.alias` | string | The base alias name (autonomous variant is `<alias>-auto`) |
 | `bots.<name>.group` | string or null | Group this bot belongs to |
 | `bots.<name>.botUsername` | string | Telegram bot username (from BotFather) |
 | `bots.<name>.created` | string | Creation date in YYYY-MM-DD format |
@@ -157,7 +157,23 @@ Bot tokens are stored only in per-bot `.env` files, which are set to `chmod 600`
 
 ### Dual aliases
 
-Every bot gets both an autonomous and a safe alias. The safe variant (`<alias>-safe`) omits `--dangerously-skip-permissions`, so Claude will prompt before executing risky operations (file writes, shell commands, network requests). This gives users a trust gradient — run trusted bots autonomously, run new or sensitive bots interactively.
+Every bot gets both a safe and an autonomous alias. The default alias (no suffix) omits `--dangerously-skip-permissions`, so Claude will prompt before executing risky operations (file writes, shell commands, network requests). The autonomous variant (`<alias>-auto`) adds `--dangerously-skip-permissions` for unattended operation. This gives users a trust gradient — safe by default, autonomous only when explicitly chosen.
+
+### Directory and file permissions
+
+Bot directories should be set to `chmod 700` (owner only) on creation. The registry file (`crew-registry.json`) should be `chmod 600`. This prevents other system users from reading bot tokens or modifying bot configuration.
+
+### Inter-bot isolation limitations
+
+In v1, all bots run under the same OS user and share the same filesystem namespace. A bot with `--dangerously-skip-permissions` can read or modify another bot's state directory. True inter-bot isolation requires running bots under separate OS users or in containers — this is not enforced in v1.
+
+### Path validation
+
+Any operation that performs destructive filesystem actions (e.g., `rm -rf` during `/solocrew delete`) must validate that the target path is inside the expected `~/.claude/channels/` directory. Paths containing `..`, symlink escapes, or values outside the channels directory must be rejected to prevent accidental or malicious deletion of unrelated files.
+
+### Input validation
+
+Bot names, alias names, and purpose fields must be validated on creation and edit. Bot names should be restricted to alphanumeric characters, hyphens, and underscores. Alias names must be valid shell identifiers. Purpose fields should be sanitized to prevent shell injection when written into RC file comments.
 
 ### No tokens in version control
 
