@@ -75,12 +75,30 @@ When creating the first bot, detect the user's Telegram ID from existing `~/.cla
 
 **Interactive flow — ask one question at a time using AskUserQuestion where appropriate:**
 
-1. **Validate name:**
+1. **Pre-flight checks:**
+   - Run `which bun` — if Bun is not installed, warn and offer to install:
+     ```
+     Bun runtime is required for Telegram channel plugins.
+     Without it, the bot session will silently fail to connect.
+
+     Install now with:
+       curl -fsSL https://bun.sh/install | bash
+
+     Then restart your terminal and run /solocrew create <name> again.
+     ```
+     Ask the user if they want to install Bun now. If yes, run the install command. If no, STOP.
+   - Run `claude --version` and check the version is >= 2.1.80. If not, warn:
+     ```
+     Claude Code v2.1.80+ is required for channels support.
+     Run: claude update
+     ```
+
+2. **Validate name:**
    - Must be lowercase alphanumeric + hyphens, 2-30 chars
    - Check registry for duplicates — if exists, refuse and suggest `<name>-2`
    - Check if directory `~/.claude/channels/crew-<name>/` already exists — if so, suggest `migrate` instead
 
-2. **Ask for BotFather token:**
+3. **Ask for BotFather token:**
    - If user doesn't have one, print this guide and STOP:
      ```
      CREATE A BOT WITH @BOTFATHER:
@@ -94,26 +112,26 @@ When creating the first bot, detect the user's Telegram ID from existing `~/.cla
    - Validate token format: must match pattern `^\d+:[\w-]+$`
    - Check all existing bot `.env` files for duplicate tokens — warn if found
 
-3. **Ask for bot username** (the @username from BotFather, e.g., `@DevAssistBot`)
+4. **Ask for bot username** (the @username from BotFather, e.g., `@DevAssistBot`)
 
-4. **Ask for purpose/role description** (one line, e.g., "App development")
+5. **Ask for purpose/role description** (one line, e.g., "App development")
 
-5. **Ask for project directory** (optional):
+6. **Ask for project directory** (optional):
    - Suggest current working directory as default
    - If provided, validate path exists (warn if not, but allow)
 
-6. **Suggest alias:**
+7. **Suggest alias:**
    - Default: `claude<name>` (e.g., `claudedev`)
    - Detect shell from `$SHELL` env var → determine RC file (`~/.zshrc` or `~/.bashrc`)
    - Read RC file and check for existing alias with same name — if conflict, suggest alternatives
    - Ask user to confirm or customize
 
-7. **Ask for group** (optional):
+8. **Ask for group** (optional):
    - List existing groups from registry
    - Allow creating a new group inline (ask for group name + description)
    - Allow skipping (no group)
 
-8. **Create everything:**
+9. **Create everything:**
 
    a. Create directory:
    ```bash
@@ -163,7 +181,7 @@ When creating the first bot, detect the user's Telegram ID from existing `~/.cla
 
    f. Update registry: add bot entry, add to group if specified.
 
-9. **Output summary:**
+10. **Output summary:**
    ```
    Bot "<name>" created successfully!
 
