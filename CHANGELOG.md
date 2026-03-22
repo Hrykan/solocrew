@@ -21,6 +21,11 @@ Fleet operations and bot identity features.
   - Displays "Telegram bot connected: \<name\>" in terminal
   - Injects bot identity into Claude's context automatically
   - Non-Telegram sessions are unaffected
+- **Per-bot model routing** — assign different Claude models per bot for fleet cost optimization ([#4](https://github.com/Hrykan/solocrew/issues/4))
+  - New `model` field in registry schema (opus, sonnet, haiku, or full model ID)
+  - Aliases include `--model <model>` when set
+  - `/solocrew create` prompts for model with cost guidance table
+  - `/solocrew list` and `status` show configured model
 - Command center vision doc (`docs/command-center-vision.md`)
 - Project positioning doc (`docs/project-positioning.md`)
 

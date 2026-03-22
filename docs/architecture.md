@@ -29,9 +29,11 @@ Each bot gets **two** shell aliases, written to the user's shell RC file during 
 
 ```bash
 # solocrew: devbot — App development
-alias claudedev='TELEGRAM_STATE_DIR=/home/user/.claude/channels/crew-devbot claude --channels plugin:telegram@claude-plugins-official'
-alias claudedev-auto='TELEGRAM_STATE_DIR=/home/user/.claude/channels/crew-devbot claude --channels plugin:telegram@claude-plugins-official --dangerously-skip-permissions'
+alias claudedev='TELEGRAM_STATE_DIR=/home/user/.claude/channels/crew-devbot claude --channels plugin:telegram@claude-plugins-official --model opus'
+alias claudedev-auto='TELEGRAM_STATE_DIR=/home/user/.claude/channels/crew-devbot claude --channels plugin:telegram@claude-plugins-official --model opus --dangerously-skip-permissions'
 ```
+
+The `--model` flag is optional — omitted when the bot uses the account default model.
 
 ### The two variants
 
@@ -72,6 +74,7 @@ The central registry lives at `~/.claude/channels/crew-registry.json`. It tracks
       "project": "/home/user/projects/my-app",
       "alias": "claudedev",
       "group": "dev",
+      "model": "opus",
       "botUsername": "@DevAssistBot",
       "created": "2026-03-22"
     }
@@ -100,6 +103,7 @@ The central registry lives at `~/.claude/channels/crew-registry.json`. It tracks
 | `bots.<name>.project` | string | Absolute path to the project this bot works on |
 | `bots.<name>.alias` | string | The base alias name (autonomous variant is `<alias>-auto`) |
 | `bots.<name>.group` | string or null | Group this bot belongs to |
+| `bots.<name>.model` | string or null | Claude model to use (`"opus"`, `"sonnet"`, `"haiku"`, or full model ID). Null = account default. |
 | `bots.<name>.botUsername` | string | Telegram bot username (from BotFather) |
 | `bots.<name>.created` | string | Creation date in YYYY-MM-DD format |
 | `groups.<name>.description` | string | What this group of bots does |

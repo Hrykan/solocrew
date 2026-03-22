@@ -64,10 +64,23 @@ When creating the first bot, detect the user's Telegram ID from existing `~/.cla
   "project": "/absolute/path/to/project",
   "alias": "claude<name>",
   "group": "<group-name-or-null>",
+  "model": "<model-or-null>",
   "botUsername": "@BotUsernameBot",
   "created": "YYYY-MM-DD"
 }
 ```
+
+### Model field
+
+The optional `model` field controls which Claude model the bot uses. Valid values: `"opus"`, `"sonnet"`, `"haiku"`, or a full model ID (e.g., `"claude-sonnet-4-6"`). When set, the alias includes `--model <model>`. When null or omitted, the account default model is used.
+
+Cost guidance for fleet operators:
+| Role | Recommended Model | Why |
+|------|------------------|-----|
+| Dev/coding agent | opus or sonnet | Complex reasoning, code generation |
+| Writer/content | sonnet | Good prose, creativity |
+| Research/summarization | haiku or sonnet | Summarization, web search |
+| Monitoring/ops | haiku | Status checks, log parsing |
 
 ---
 
@@ -136,12 +149,17 @@ When creating the first bot, detect the user's Telegram ID from existing `~/.cla
    - Read RC file and check for existing alias with same name — if conflict, suggest alternatives
    - Ask user to confirm or customize
 
-8. **Ask for group** (optional):
+8. **Ask for model** (optional):
+   - Show cost guidance table (opus/sonnet/haiku with role recommendations)
+   - Default: skip (use account default)
+   - If provided, validate it's one of: `opus`, `sonnet`, `haiku`, or matches a full model ID pattern
+
+9. **Ask for group** (optional):
    - List existing groups from registry
    - Allow creating a new group inline (ask for group name + description)
    - Allow skipping (no group)
 
-9. **Create everything:**
+10. **Create everything:**
 
    a. Create directory:
    ```bash
@@ -184,11 +202,12 @@ When creating the first bot, detect the user's Telegram ID from existing `~/.cla
    e. Add aliases to shell RC file. Create TWO aliases per bot:
    ```bash
    # solocrew: <name> — <purpose>
-   alias <alias>='TELEGRAM_STATE_DIR=<expanded-dir> claude --channels plugin:telegram@claude-plugins-official'
-   alias <alias>-auto='TELEGRAM_STATE_DIR=<expanded-dir> claude --channels plugin:telegram@claude-plugins-official --dangerously-skip-permissions'
+   alias <alias>='TELEGRAM_STATE_DIR=<expanded-dir> claude --channels plugin:telegram@claude-plugins-official<model-flag>'
+   alias <alias>-auto='TELEGRAM_STATE_DIR=<expanded-dir> claude --channels plugin:telegram@claude-plugins-official<model-flag> --dangerously-skip-permissions'
    ```
 
    Where `<expanded-dir>` is the full path, e.g., `~/.claude/channels/crew-<name>`.
+   Where `<model-flag>` is ` --model <model>` if model is set, or empty string if null/omitted.
 
    f. Update registry: add bot entry, add to group if specified. After writing, apply:
    ```bash
@@ -205,6 +224,7 @@ When creating the first bot, detect the user's Telegram ID from existing `~/.cla
    Bot:          <botUsername>
    Purpose:      <purpose>
    Project:      <project>
+   Model:        <model or "account default">
    Group:        <group or "none">
 
    NEXT STEPS:
@@ -225,10 +245,10 @@ When creating the first bot, detect the user's Telegram ID from existing `~/.cla
 YOUR CREW
 ==================
 
-NAME        ALIAS       GROUP    PURPOSE                         BOT
-primary     claudetg    —        General assistant                @PrimaryBot
-devbot      claudedev   dev      App development                  @DevAssistBot
-ops         claudeops   infra    Deployments & servers            @OpsBot
+NAME        ALIAS       MODEL    GROUP    PURPOSE                         BOT
+primary     claudetg    default  —        General assistant                @PrimaryBot
+devbot      claudedev   opus     dev      App development                  @DevAssistBot
+ops         claudeops   haiku    infra    Deployments & servers            @OpsBot
 
 3 bots registered. Use '/solocrew status <name>' for details.
 ```
@@ -250,6 +270,7 @@ Bot:         @DevAssistBot
 Alias:       claudedev
 Purpose:     App development
 Project:     ~/projects/my-app
+Model:       opus
 Group:       dev
 Policy:      allowlist
 Senders:     1 (123456789)
