@@ -25,38 +25,27 @@ function App() {
 
   return (
     <div className="relative z-10 min-h-screen">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
         <FleetHeader />
 
-        {/* Status bar */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-6 font-mono text-sm">
-            <div className="flex items-center gap-2">
-              <span className="inline-block h-2 w-2 rounded-full bg-signal-green" />
-              <span className="text-signal-green">{healthyCount} ONLINE</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="inline-block h-2 w-2 rounded-full bg-signal-amber" />
-              <span className="text-signal-amber">{staleCount} STALE</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="inline-block h-2 w-2 rounded-full bg-signal-red" />
-              <span className="text-signal-red">{offlineCount} OFFLINE</span>
-            </div>
-            <div className="text-muted-foreground">
-              {totalCount} TOTAL
-            </div>
+        {/* Telemetry + Filters — stacked on mobile, inline on desktop */}
+        <div className="mb-6 space-y-3 sm:mb-8 sm:flex sm:items-center sm:justify-between sm:space-y-0">
+          {/* Telemetry strip */}
+          <div className="inline-flex items-center gap-3 rounded-full border border-border/30 bg-abyss/40 px-4 py-2 backdrop-blur-sm sm:gap-4 sm:px-5">
+            <StatusPip color="bg-signal-green" count={healthyCount} />
+            <StatusPip color="bg-signal-amber" count={staleCount} />
+            <StatusPip color="bg-signal-red" count={offlineCount} />
+            <span className="hidden font-mono text-[9px] tracking-[0.2em] text-muted-foreground/30 sm:inline">
+              {totalCount} DEPLOYED
+            </span>
           </div>
 
-          {/* Group filter */}
+          {/* Sector filter */}
           {groups.length > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-                FILTER:
-              </span>
+            <div className="flex flex-wrap items-center gap-1.5">
               <Badge
                 variant={groupFilter === null ? "default" : "outline"}
-                className="cursor-pointer font-mono text-xs"
+                className="cursor-pointer rounded-full px-3 py-1 font-mono text-[10px] tracking-wider transition-all duration-200 hover:scale-105 active:scale-95"
                 onClick={() => setGroupFilter(null)}
               >
                 ALL
@@ -65,7 +54,7 @@ function App() {
                 <Badge
                   key={group}
                   variant={groupFilter === group ? "default" : "outline"}
-                  className="cursor-pointer font-mono text-xs"
+                  className="cursor-pointer rounded-full px-3 py-1 font-mono text-[10px] tracking-wider transition-all duration-200 hover:scale-105 active:scale-95"
                   onClick={() =>
                     setGroupFilter(groupFilter === group ? null : group!)
                   }
@@ -77,47 +66,82 @@ function App() {
           )}
         </div>
 
-        {/* Separator line */}
-        <div className="mb-8 h-px w-full bg-gradient-to-r from-transparent via-ember/40 to-transparent" />
-
-        {/* Bot grid */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {bots === undefined ? (
-            <div className="col-span-full py-20 text-center">
-              <p className="animate-pulse font-heading text-sm tracking-[0.3em] text-ember">
-                ESTABLISHING UPLINK...
-              </p>
+        {/* Bot grid — asymmetric: first card spans wide on lg */}
+        {bots === undefined ? (
+          <div className="flex flex-col items-center justify-center py-24">
+            <div
+              className="mb-6 h-20 w-20 rounded-full border border-biolum/10"
+              style={{
+                background: "radial-gradient(circle, oklch(0.78 0.14 192 / 0.12), transparent 70%)",
+                animation: "breathe 3s ease-in-out infinite",
+              }}
+            />
+            <p className="font-heading text-xs tracking-[0.4em] text-biolum/40">
+              SCANNING DEPTHS
+            </p>
+            <div className="mt-3 flex gap-1">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="h-1 w-6 rounded-full bg-biolum/20"
+                  style={{
+                    animation: `pulse-healthy 1.5s ease-in-out ${i * 0.3}s infinite`,
+                  }}
+                />
+              ))}
             </div>
-          ) : filteredBots!.length === 0 ? (
-            <div className="col-span-full py-20 text-center">
-              <p className="font-heading text-sm tracking-[0.3em] text-muted-foreground">
-                NO AGENTS DETECTED
-              </p>
-              <p className="mt-2 font-mono text-xs text-muted-foreground/60">
-                Run the sync service to populate the command center
-              </p>
-            </div>
-          ) : (
-            filteredBots!.map((bot, i) => (
-              <BotCard key={bot._id} bot={bot} index={i} />
-            ))
-          )}
-        </div>
+          </div>
+        ) : filteredBots!.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24">
+            <p className="font-heading text-xs tracking-[0.4em] text-muted-foreground/40">
+              NO AGENTS IN SECTOR
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-12 lg:gap-5">
+            {filteredBots!.map((bot, i) => (
+              <div
+                key={bot._id}
+                className={
+                  i === 0
+                    ? "sm:col-span-2 lg:col-span-5"
+                    : i === 1
+                      ? "lg:col-span-4"
+                      : i === 2
+                        ? "lg:col-span-3"
+                        : i % 3 === 0
+                          ? "lg:col-span-4"
+                          : "lg:col-span-4"
+                }
+              >
+                <BotCard bot={bot} index={i} featured={i === 0} />
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Footer */}
-        <div className="mt-12 flex items-center justify-center gap-2 text-xs">
-          <span className="font-mono text-muted-foreground/40">
-            SOLOCREW COMMAND CENTER v1.1.0
-          </span>
-          <span className="text-ember/30">|</span>
-          <span
-            className="font-mono text-muted-foreground/40"
-            style={{ animation: "flicker 8s infinite" }}
-          >
-            SYSTEM NOMINAL
-          </span>
-        </div>
+        <footer className="mt-16 flex flex-col items-center gap-2 sm:mt-20">
+          <div className="flex items-center gap-3">
+            <div className="h-px w-6 bg-gradient-to-r from-transparent to-biolum/15 sm:w-8" />
+            <span className="font-mono text-[7px] tracking-[0.4em] text-muted-foreground/20 sm:text-[8px]">
+              SOLOCREW v1.1.0
+            </span>
+            <div className="h-px w-6 bg-gradient-to-l from-transparent to-biolum/15 sm:w-8" />
+          </div>
+        </footer>
       </div>
+    </div>
+  );
+}
+
+function StatusPip({ color, count }: { color: string; count: number }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className={`inline-block h-1.5 w-1.5 rounded-full ${color}`} />
+      <span className="font-mono text-[12px] font-semibold tabular-nums text-foreground/70">
+        {count}
+      </span>
     </div>
   );
 }

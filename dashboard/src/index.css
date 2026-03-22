@@ -44,9 +44,11 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
-    --color-ember: var(--ember);
-    --color-ember-glow: var(--ember-glow);
-    --color-ember-dim: var(--ember-dim);
+    --color-biolum: var(--biolum);
+    --color-biolum-glow: var(--biolum-glow);
+    --color-biolum-dim: var(--biolum-dim);
+    --color-abyss: var(--abyss);
+    --color-jellyfish: var(--jellyfish);
     --color-signal-green: var(--signal-green);
     --color-signal-amber: var(--signal-amber);
     --color-signal-red: var(--signal-red);
@@ -59,47 +61,97 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Light — Ocean Surface: warm ivory, deep teal accents */
 :root {
-    --background: oklch(0.08 0.005 0);
-    --foreground: oklch(0.92 0 0);
-    --card: oklch(0.12 0.005 15);
-    --card-foreground: oklch(0.92 0 0);
-    --popover: oklch(0.12 0.005 15);
-    --popover-foreground: oklch(0.92 0 0);
-    --primary: oklch(0.65 0.25 25);
-    --primary-foreground: oklch(0.98 0 0);
-    --secondary: oklch(0.16 0.005 15);
-    --secondary-foreground: oklch(0.85 0 0);
-    --muted: oklch(0.18 0.005 15);
-    --muted-foreground: oklch(0.55 0 0);
-    --accent: oklch(0.20 0.01 15);
-    --accent-foreground: oklch(0.92 0 0);
-    --destructive: oklch(0.65 0.25 25);
-    --border: oklch(0.22 0.01 15);
-    --input: oklch(0.18 0.01 15);
-    --ring: oklch(0.65 0.25 25);
-    --chart-1: oklch(0.65 0.25 25);
-    --chart-2: oklch(0.75 0.18 145);
-    --chart-3: oklch(0.80 0.15 85);
-    --chart-4: oklch(0.60 0.20 280);
-    --chart-5: oklch(0.70 0.15 200);
-    --radius: 0.375rem;
+    --background: oklch(0.97 0.005 85);
+    --foreground: oklch(0.15 0.03 245);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.15 0.03 245);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.15 0.03 245);
+    --primary: oklch(0.45 0.12 200);
+    --primary-foreground: oklch(0.98 0.005 85);
+    --secondary: oklch(0.94 0.01 210);
+    --secondary-foreground: oklch(0.25 0.04 240);
+    --muted: oklch(0.94 0.008 200);
+    --muted-foreground: oklch(0.50 0.02 220);
+    --accent: oklch(0.94 0.01 210);
+    --accent-foreground: oklch(0.15 0.03 245);
+    --destructive: oklch(0.55 0.22 28);
+    --border: oklch(0.90 0.015 210);
+    --input: oklch(0.92 0.01 210);
+    --ring: oklch(0.45 0.12 200);
+    --chart-1: oklch(0.45 0.12 200);
+    --chart-2: oklch(0.52 0.14 285);
+    --chart-3: oklch(0.55 0.15 160);
+    --chart-4: oklch(0.70 0.13 85);
+    --chart-5: oklch(0.50 0.10 200);
+    --radius: 0.625rem;
 
-    --ember: oklch(0.65 0.25 25);
-    --ember-glow: oklch(0.55 0.22 20);
-    --ember-dim: oklch(0.35 0.12 20);
-    --signal-green: oklch(0.72 0.19 145);
-    --signal-amber: oklch(0.80 0.16 85);
-    --signal-red: oklch(0.65 0.25 25);
+    --biolum: oklch(0.38 0.12 200);
+    --biolum-glow: oklch(0.48 0.10 195);
+    --biolum-dim: oklch(0.55 0.06 200);
+    --abyss: oklch(0.96 0.005 85);
+    --jellyfish: oklch(0.48 0.14 285);
 
-    --sidebar: oklch(0.10 0.005 15);
-    --sidebar-foreground: oklch(0.92 0 0);
-    --sidebar-primary: oklch(0.65 0.25 25);
-    --sidebar-primary-foreground: oklch(0.98 0 0);
-    --sidebar-accent: oklch(0.16 0.005 15);
-    --sidebar-accent-foreground: oklch(0.92 0 0);
-    --sidebar-border: oklch(0.22 0.01 15);
-    --sidebar-ring: oklch(0.65 0.25 25);
+    --signal-green: oklch(0.48 0.15 160);
+    --signal-amber: oklch(0.62 0.14 75);
+    --signal-red: oklch(0.50 0.20 25);
+
+    --sidebar: oklch(0.96 0.005 85);
+    --sidebar-foreground: oklch(0.15 0.03 245);
+    --sidebar-primary: oklch(0.45 0.12 200);
+    --sidebar-primary-foreground: oklch(0.98 0.005 85);
+    --sidebar-accent: oklch(0.94 0.01 210);
+    --sidebar-accent-foreground: oklch(0.15 0.03 245);
+    --sidebar-border: oklch(0.90 0.015 210);
+    --sidebar-ring: oklch(0.45 0.12 200);
+}
+
+/* Dark — Ocean Depth: deep navy, bioluminescent accents */
+.dark {
+    --background: oklch(0.08 0.03 250);
+    --foreground: oklch(0.88 0.015 210);
+    --card: oklch(0.12 0.03 245);
+    --card-foreground: oklch(0.90 0.01 210);
+    --popover: oklch(0.13 0.03 245);
+    --popover-foreground: oklch(0.90 0.01 210);
+    --primary: oklch(0.78 0.14 192);
+    --primary-foreground: oklch(0.10 0.03 250);
+    --secondary: oklch(0.16 0.03 245);
+    --secondary-foreground: oklch(0.82 0.015 210);
+    --muted: oklch(0.16 0.025 245);
+    --muted-foreground: oklch(0.50 0.025 225);
+    --accent: oklch(0.18 0.035 245);
+    --accent-foreground: oklch(0.90 0.01 210);
+    --destructive: oklch(0.58 0.22 28);
+    --border: oklch(0.20 0.035 245);
+    --input: oklch(0.16 0.03 245);
+    --ring: oklch(0.78 0.14 192);
+    --chart-1: oklch(0.78 0.14 192);
+    --chart-2: oklch(0.70 0.14 285);
+    --chart-3: oklch(0.75 0.17 165);
+    --chart-4: oklch(0.82 0.13 85);
+    --chart-5: oklch(0.65 0.10 200);
+
+    --biolum: oklch(0.80 0.14 192);
+    --biolum-glow: oklch(0.70 0.12 195);
+    --biolum-dim: oklch(0.42 0.07 200);
+    --abyss: oklch(0.05 0.025 255);
+    --jellyfish: oklch(0.72 0.14 285);
+
+    --signal-green: oklch(0.78 0.16 160);
+    --signal-amber: oklch(0.84 0.13 80);
+    --signal-red: oklch(0.62 0.20 25);
+
+    --sidebar: oklch(0.10 0.03 250);
+    --sidebar-foreground: oklch(0.88 0.015 210);
+    --sidebar-primary: oklch(0.78 0.14 192);
+    --sidebar-primary-foreground: oklch(0.10 0.03 250);
+    --sidebar-accent: oklch(0.16 0.03 245);
+    --sidebar-accent-foreground: oklch(0.90 0.01 210);
+    --sidebar-border: oklch(0.20 0.035 245);
+    --sidebar-ring: oklch(0.78 0.14 192);
 }
 
 @layer base {
@@ -114,73 +166,132 @@
   }
 }
 
-/* Scanline overlay */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9999;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.03) 2px,
-    rgba(0, 0, 0, 0.03) 4px
-  );
+/* ============================================
+   DEEP SEA ATMOSPHERE
+   ============================================ */
+
+/* Light mode — soft watercolor wash */
+body {
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 20%, oklch(0.85 0.04 200 / 0.4), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 85% 75%, oklch(0.88 0.04 280 / 0.3), transparent 55%),
+    radial-gradient(ellipse 90% 70% at 50% 110%, oklch(0.90 0.03 200 / 0.3), transparent 50%),
+    var(--background);
+  background-attachment: fixed;
 }
 
-/* Grid background */
+/* Dark mode — deep ocean layered depth */
+.dark body {
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 20%, oklch(0.14 0.06 240 / 0.8), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 85% 75%, oklch(0.12 0.06 280 / 0.5), transparent 55%),
+    radial-gradient(ellipse 90% 70% at 50% 110%, oklch(0.10 0.05 200 / 0.6), transparent 50%),
+    oklch(0.08 0.03 250);
+}
+
+/* Floating particles — subtle in light, bioluminescent in dark */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background-image:
-    linear-gradient(rgba(220, 50, 50, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(220, 50, 50, 0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
+  background:
+    radial-gradient(1.5px 1.5px at 12% 25%, oklch(0.45 0.12 200 / 0.12), transparent),
+    radial-gradient(1px 1px at 30% 68%, oklch(0.48 0.14 285 / 0.10), transparent),
+    radial-gradient(2px 2px at 55% 15%, oklch(0.45 0.12 200 / 0.08), transparent),
+    radial-gradient(1px 1px at 72% 42%, oklch(0.48 0.14 285 / 0.10), transparent),
+    radial-gradient(1.5px 1.5px at 88% 78%, oklch(0.45 0.12 200 / 0.06), transparent),
+    radial-gradient(1px 1px at 45% 88%, oklch(0.48 0.15 160 / 0.08), transparent),
+    radial-gradient(2px 2px at 8% 72%, oklch(0.48 0.14 285 / 0.05), transparent),
+    radial-gradient(1px 1px at 65% 55%, oklch(0.45 0.12 200 / 0.04), transparent);
+  animation: drift-particles 30s ease-in-out infinite alternate;
 }
 
-/* Pulsing status indicator */
+.dark body::before {
+  background:
+    radial-gradient(1.5px 1.5px at 12% 25%, oklch(0.80 0.14 192 / 0.25), transparent),
+    radial-gradient(1px 1px at 30% 68%, oklch(0.72 0.14 285 / 0.20), transparent),
+    radial-gradient(2px 2px at 55% 15%, oklch(0.78 0.14 192 / 0.15), transparent),
+    radial-gradient(1px 1px at 72% 42%, oklch(0.72 0.14 285 / 0.18), transparent),
+    radial-gradient(1.5px 1.5px at 88% 78%, oklch(0.80 0.14 192 / 0.12), transparent),
+    radial-gradient(1px 1px at 45% 88%, oklch(0.78 0.16 160 / 0.15), transparent),
+    radial-gradient(2px 2px at 8% 72%, oklch(0.72 0.14 285 / 0.10), transparent),
+    radial-gradient(1px 1px at 65% 55%, oklch(0.80 0.14 192 / 0.08), transparent);
+}
+
+@keyframes drift-particles {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-8px, -12px); }
+}
+
+/* ============================================
+   STATUS PULSES — organic bioluminescent glow
+   ============================================ */
+
 @keyframes pulse-healthy {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.6); }
-  50% { box-shadow: 0 0 8px 3px rgba(74, 222, 128, 0.3); }
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.78 0.16 160 / 0.5); }
+  50% { box-shadow: 0 0 12px 5px oklch(0.78 0.16 160 / 0.15); }
 }
 
 @keyframes pulse-stale {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.6); }
-  50% { box-shadow: 0 0 8px 3px rgba(250, 204, 21, 0.3); }
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.84 0.13 80 / 0.5); }
+  50% { box-shadow: 0 0 12px 5px oklch(0.84 0.13 80 / 0.15); }
 }
 
 @keyframes pulse-offline {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  50% { opacity: 0.25; }
 }
 
-@keyframes card-glow-in {
-  from { border-color: var(--border); }
-  to { border-color: var(--ember); }
+/* Title breathe — deep, slow, bioluminescent */
+@keyframes breathe {
+  0%, 100% {
+    text-shadow:
+      0 0 30px oklch(0.78 0.14 192 / 0.3),
+      0 0 80px oklch(0.78 0.14 192 / 0.08);
+  }
+  50% {
+    text-shadow:
+      0 0 40px oklch(0.78 0.14 192 / 0.5),
+      0 0 100px oklch(0.78 0.14 192 / 0.15),
+      0 0 150px oklch(0.72 0.14 285 / 0.05);
+  }
 }
 
-@keyframes flicker {
-  0%, 100% { opacity: 1; }
-  92% { opacity: 1; }
-  93% { opacity: 0.8; }
-  94% { opacity: 1; }
-  96% { opacity: 0.9; }
-  97% { opacity: 1; }
-}
-
-/* Staggered card entrance */
-@keyframes slide-up-fade {
+/* Cards rise from the abyss */
+@keyframes rise-up {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(30px) scale(0.96);
+    filter: blur(4px) brightness(0.7);
+  }
+  60% {
+    filter: blur(0) brightness(1);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+    filter: blur(0) brightness(1);
   }
+}
+
+/* Sonar ping for the connected indicator */
+@keyframes sonar {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(3.5);
+    opacity: 0;
+  }
+}
+
+/* Gentle horizontal scan line that moves across cards on hover */
+@keyframes scan-line {
+  0% { transform: translateX(-100%); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translateX(200%); opacity: 0; }
 }
