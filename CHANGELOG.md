@@ -1,5 +1,34 @@
 # Changelog
 
+## v1.1.0 — 2026-03-22
+
+Fleet operations and bot identity features.
+
+### Added
+- **`/solocrew launch`** — launch all bots (or a subset) in a tmux session with one command ([#1](https://github.com/Hrykan/solocrew/issues/1))
+  - Supports `--auto` flag for autonomous mode
+  - Supports `--group <name>` to launch only bots in a group
+  - Supports launching a single bot by name
+  - Skips bots that are already running
+  - Uses full alias command (not alias name) since tmux doesn't load shell RC
+- **`/solocrew health`** — check fleet health and bot status ([#2](https://github.com/Hrykan/solocrew/issues/2))
+  - Detects tmux window, process alive, last activity timestamp
+  - Status: healthy / stale / offline
+  - Summary line with fleet-wide health count
+  - Optional `--json` flag for machine-readable output
+- **Bot identity auto-injection** via `SessionStart` hook ([#3](https://github.com/Hrykan/solocrew/issues/3))
+  - Reads `instructions.md` from bot's state directory at session start
+  - Displays "Telegram bot connected: \<name\>" in terminal
+  - Injects bot identity into Claude's context automatically
+  - Non-Telegram sessions are unaffected
+- Command center vision doc (`docs/command-center-vision.md`)
+- Project positioning doc (`docs/project-positioning.md`)
+
+### Changed
+- Updated architecture docs — `instructions.md` section now documents auto-injection via hook
+- Updated README — roadmap reflects v1.1 features with issue links
+- Updated help text with fleet operations section
+
 ## v1.0.1 — 2026-03-22
 
 Security hardening and documentation improvements.

@@ -81,7 +81,9 @@ claudedev-auto     # autonomous mode (no permission prompts)
 | `/solocrew list` | List all registered bots and their status |
 | `/solocrew status` | Show detailed status for a specific bot |
 | `/solocrew delete` | Remove a bot and clean up its directory and aliases |
-| `/solocrew migrate` | Migrate registry to the latest schema version |
+| `/solocrew launch` | Launch all bots in tmux (or a single bot / group) |
+| `/solocrew health` | Check fleet health — which bots are running |
+| `/solocrew migrate` | Adopt an existing default bot into the registry |
 | `/solocrew group create` | Create a named group for organizing bots |
 | `/solocrew group add` | Add a bot to a group |
 | `/solocrew group list` | List all groups and their members |
@@ -112,7 +114,7 @@ claudedev-auto     # autonomous mode (no permission prompts)
 
 **Groups** — Bots can be organized into named groups (e.g., "dev", "content", "ops") for logical organization. Groups are labels today with automation planned for future versions.
 
-**instructions.md** — A reference file describing the bot's role and personality. It is not auto-injected into Claude sessions. To activate it, symlink or include it in your project's `CLAUDE.md`.
+**instructions.md** — A reference file describing the bot's role and personality. Auto-injected into Claude sessions at startup via a `SessionStart` hook — the bot knows its identity automatically. See [architecture docs](docs/architecture.md#7-instructionsmd) for setup details.
 
 ## Security
 
@@ -175,11 +177,11 @@ Then use `/solocrew` in any Claude Code session.
 
 ### v1.1 (near-term)
 
+- `/solocrew launch` — tmux fleet launcher (one command boots all bots) ([#1](https://github.com/Hrykan/solocrew/issues/1))
+- `/solocrew health` — bot health checks and fleet status ([#2](https://github.com/Hrykan/solocrew/issues/2))
+- Auto-inject bot identity via SessionStart hook ([#3](https://github.com/Hrykan/solocrew/issues/3))
+- Per-bot model routing for fleet cost optimization ([#4](https://github.com/Hrykan/solocrew/issues/4))
 - Discord channel support (registry schema already supports it)
-- SOUL.md personality templates per bot
-- Topic-based routing in Telegram supergroups
-- Webhook/CI triggers for proactive notifications
-- Bot status health checks
 
 ### v2.0 (future)
 

@@ -218,19 +218,59 @@ Each bot's directory contains an `instructions.md` file that describes the bot's
 
 ### What it is
 
-A reference document for the user. It captures what this bot is for, what project it works on, and any behavioral notes (tone, constraints, preferred tools).
+A reference document that defines the bot's identity. It captures what this bot is for, what project it works on, and any behavioral notes (tone, constraints, preferred tools).
 
-### What it is NOT
+### Auto-injection via SessionStart hook
 
-`instructions.md` is **not** automatically injected into the Claude Code session. When a bot starts via its alias, Claude does not read this file unless explicitly configured to do so.
+`instructions.md` is automatically injected into the Claude Code session at startup via a global `SessionStart` hook in `~/.claude/settings.json`. When a bot session starts:
 
-### Workarounds to make it active
+1. The hook checks if `TELEGRAM_STATE_DIR` is set (it is for all solocrew bot aliases)
+2. Reads `instructions.md` from that bot's state directory
+3. Displays "Telegram bot connected: \<name\>" in the terminal
+4. Injects the instructions into Claude's context via `additionalContext`
 
-There are two approaches to get the instructions into the Claude session:
+This means Claude knows which bot it is and follows the bot's role guidelines automatically. Non-Telegram sessions are unaffected — the hook exits silently when `TELEGRAM_STATE_DIR` is unset.
+
+#### The hook
+
+Add this to `~/.claude/settings.json` under `hooks.SessionStart`:
+
+```json
+{
+  "hooks": [
+    {
+      "type": "command",
+      "command": "if [ -n \"$TELEGRAM_STATE_DIR\" ] && [ -f \"$TELEGRAM_STATE_DIR/instructions.md\" ]; then BOT_NAME=$(head -1 \"$TELEGRAM_STATE_DIR/instructions.md\" | sed 's/^# Bot: //'); INSTRUCTIONS=$(cat \"$TELEGRAM_STATE_DIR/instructions.md\"); python3 -c \"import json,sys; print(json.dumps({'systemMessage':'Telegram bot connected: '+sys.argv[1],'hookSpecificOutput':{'hookEventName':'SessionStart','additionalContext':'TELEGRAM BOT IDENTITY — you ARE this bot, use this identity when responding on Telegram:\\n'+sys.argv[2]}}))\" \"$BOT_NAME\" \"$INSTRUCTIONS\"; fi",
+      "statusMessage": "Checking Telegram bot identity..."
+    }
+  ]
+}
+```
+
+#### instructions.md format
+
+The file must start with `# Bot: <name>` on line 1 — the hook parses this to extract the bot name.
+
+```markdown
+# Bot: devbot
+
+## Role
+App development
+
+## Project
+/home/user/projects/my-app
+
+## Behavior
+- You are the devbot agent, focused on: App development
+- Work primarily in: /home/user/projects/my-app
+- Prioritize tasks related to your role
+```
+
+### Manual alternatives
+
+If the SessionStart hook is not configured, there are two manual approaches:
 
 **1. Copy into CLAUDE.md**
-
-Copy the relevant content from `instructions.md` into the project's `CLAUDE.md` file. This is the simplest approach — Claude reads `CLAUDE.md` at session start.
 
 ```bash
 cat ~/.claude/channels/crew-devbot/instructions.md >> ~/projects/my-app/CLAUDE.md
@@ -238,12 +278,6 @@ cat ~/.claude/channels/crew-devbot/instructions.md >> ~/projects/my-app/CLAUDE.m
 
 **2. Symlink into the project**
 
-Create a symlink so Claude picks it up as part of the project's instruction files:
-
 ```bash
 ln -s ~/.claude/channels/crew-devbot/instructions.md ~/projects/my-app/.claude/instructions.md
 ```
-
-### Future
-
-Auto-injection of `instructions.md` into the Claude session at bot startup is planned for a future version. The file format and location are designed to support this without migration.

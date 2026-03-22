@@ -30,6 +30,8 @@ Parse the arguments (space-separated) to dispatch:
 | `group add <group> <bot>` | Add bot to group |
 | `group list` | List all groups |
 | `group delete <name>` | Delete a group |
+| `launch` | Launch all bots in tmux (or a single bot / group) |
+| `health` | Check fleet health — which bots are running |
 | `help` | Comprehensive usage guide |
 
 ---
@@ -343,6 +345,83 @@ If no groups, say so and suggest `/solocrew group create <name>`.
 3. Remove group from registry
 4. Confirm
 
+### `launch [name|--group <group>] [--auto]`
+
+Launch bots in a tmux session for fleet operation.
+
+1. Read `crew-registry.json` — if no bots, suggest `/solocrew create`
+2. Determine which bots to launch:
+   - No arguments: launch ALL registered bots
+   - `launch <name>`: launch a single bot
+   - `launch --group <group>`: launch only bots in that group
+3. Check if tmux is installed (`which tmux`) — if not, provide install instructions and STOP
+4. Check for existing tmux session named `crew`:
+   - If exists, list which windows are already running and ask whether to attach, add missing bots, or recreate
+5. For each bot to launch:
+   - Check if already running (`tmux list-windows -t crew 2>/dev/null | grep <name>`) — skip if running
+   - Determine alias: use safe alias by default, autonomous alias if `--auto` flag is passed
+6. Generate and execute tmux commands:
+   ```bash
+   # Create session with first bot
+   tmux new-session -d -s crew -n "<first-bot-name>"
+   tmux send-keys -t "crew:<first-bot-name>" "<alias-command>" Enter
+
+   # Add remaining bots as new windows
+   tmux new-window -t crew -n "<bot-name>"
+   tmux send-keys -t "crew:<bot-name>" "<alias-command>" Enter
+   ```
+   Where `<alias-command>` is the full alias value from the shell RC file (NOT the alias name — tmux doesn't load shell aliases).
+7. Output summary:
+   ```
+   CREW LAUNCHED
+   =============
+   Window    Bot              Mode      Project
+   0         devbot           safe      ~/projects/app
+   1         writer           safe      ~/projects/content
+   2         ops              auto      ~/projects/infra
+
+   3 bots launched in tmux session "crew".
+
+   Attach with:  tmux attach -t crew
+   Switch:       Ctrl+B then window number (0, 1, 2)
+   ```
+
+**Security notes:**
+- Uses full alias command value, not alias name (tmux sessions don't load shell RC)
+- Safe mode by default — `--auto` must be explicitly passed
+- Each tmux window inherits `TELEGRAM_STATE_DIR` from the alias command — tokens stay in `.env` files
+
+### `health`
+
+Check fleet health — which bots are running, last activity, overall status.
+
+1. Read `crew-registry.json` — if no bots, suggest `/solocrew create`
+2. For each bot, check:
+   - **tmux session:** `tmux has-session -t crew 2>/dev/null` and `tmux list-windows -t crew -F '#{window_name}' 2>/dev/null | grep -q '<name>'`
+   - **Process alive:** `pgrep -f "TELEGRAM_STATE_DIR=<dir>" 2>/dev/null`
+   - **Last activity:** most recent file modification time in the bot's state directory (`stat` on newest file in `<dir>/`)
+3. Display table:
+   ```
+   FLEET HEALTH
+   =============
+
+   BOT          TMUX     PROCESS   LAST ACTIVE        STATUS
+   devbot       yes      yes       2 min ago           healthy
+   writer       yes      yes       15 min ago          healthy
+   ops          no       no        3 hours ago         offline
+   monitor      yes      no        1 hour ago          stale
+
+   3/4 bots healthy. 1 offline.
+   ```
+
+   Status logic:
+   - `healthy` = tmux window exists AND process alive
+   - `stale` = tmux window exists BUT no process found (session may have died)
+   - `offline` = no tmux window AND no process
+
+4. Exit code: `0` if all healthy, `1` if any offline or stale
+5. Optional `--json` flag outputs machine-readable JSON
+
 ### `help`
 
 Display this comprehensive guide:
@@ -393,6 +472,8 @@ COMMANDS
   /solocrew list                    List all registered bots
   /solocrew status <name>           Detailed status of one bot
   /solocrew delete <name>           Remove a bot and its config
+  /solocrew launch [name|--group]   Launch bots in tmux (all, one, or group)
+  /solocrew health                  Check fleet health and bot status
   /solocrew migrate                 Adopt existing default bot into registry
   /solocrew group create <name>     Create a bot group
   /solocrew group add <grp> <bot>   Add a bot to a group
@@ -406,8 +487,8 @@ INSTRUCTIONS.MD
   - Which project it works in
   - Behavioral guidelines
 
+  Auto-injected at session start via SessionStart hook (if configured).
   Edit directly: ~/.claude/channels/crew-<name>/instructions.md
-  Or reference it in your project's CLAUDE.md for auto-loading.
 
 GROUPS
   Groups are organizational labels — they help you remember which bots
@@ -422,7 +503,15 @@ LIMITATIONS
   - No cross-session messaging (bots can't talk to each other)
   - Bot only sees messages as they arrive (no history or search)
   - You must pair with each new bot separately (DM → code → approve)
-  - instructions.md is a reference doc, not auto-injected into sessions
+  - instructions.md requires a SessionStart hook for auto-injection (see docs)
+
+FLEET OPERATIONS
+  Launch all bots:    /solocrew launch
+  Launch one bot:     /solocrew launch <name>
+  Launch a group:     /solocrew launch --group dev
+  Autonomous mode:    /solocrew launch --auto
+  Check health:       /solocrew health
+  Attach to fleet:    tmux attach -t crew
 
 TROUBLESHOOTING
   Bot not responding?
