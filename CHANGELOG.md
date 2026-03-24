@@ -1,5 +1,31 @@
 # Changelog
 
+## v1.2.0 — 2026-03-24
+
+New plugin skills and command center dashboard.
+
+### Added
+- **Autoresearch skill** — autonomous experiment loops inspired by Karpathy's autoresearch ([#12](https://github.com/Hrykan/solocrew/issues/12))
+  - Dev loop: modify → measure → commit/revert → repeat
+  - Research loop: search → scrape → score → fill gaps → repeat
+  - Presets for tests, bundle size, Lighthouse, TypeScript, lint
+- **Checkpoint skill** — session wrap-up & continuation prompts
+  - Level-set, commit, CHANGELOG, issues, memory, continuation prompt
+  - Saves to `.claude/checkpoints/LATEST.md` for instant resume
+  - Global + fleet checkpoint ledgers in JSONL
+  - Auto-checkpoint on context limits via PreCompact hook
+  - Works in any Claude Code session (terminal, bot, IDE, headless)
+- **Command center dashboard** (`dashboard/`) — fleet status UI ([#5](https://github.com/Hrykan/solocrew/issues/5))
+  - React + Vite + TypeScript + Convex backend
+  - shadcn/ui components (Nova preset)
+  - Ocean Depth theme (dark) + Ocean Surface theme (light)
+  - Asymmetric grid, bioluminescent accents, responsive design
+  - Bot cards with status indicators, role glyphs, progress bars
+  - Convex schema: bots, activity_log, tasks tables
+- **Elicitation forwarding** — forward Claude prompts to Telegram for remote response ([#13](https://github.com/Hrykan/solocrew/issues/13))
+- `/solocrew send` spec — cross-bot messaging via shared file inbox ([#10](https://github.com/Hrykan/solocrew/issues/10))
+- `/solocrew deploy` spec — VPS deployment generator ([#11](https://github.com/Hrykan/solocrew/issues/11))
+
 ## v1.1.0 — 2026-03-22
 
 Fleet operations and bot identity features.
