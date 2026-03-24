@@ -119,6 +119,11 @@ Generate a complete continuation prompt that any new session can use to resume t
 **Branch:** <current git branch>
 **Last commit:** <hash — message>
 **Stash:** <if anything was stashed, note it here>
+**Launch command:** <exact command to restart this session>
+  - For Telegram bots: the alias (e.g., `claudecrew-auto` or `claudecrew`)
+  - For terminal sessions: `cd <project-path> && claude` (or `claude --dangerously-skip-permissions`)
+  - For worktrees: include the worktree path
+**Session type:** <terminal | bot:name (@username) | IDE | headless>
 
 **Context:**
 <2-3 sentences on what this project is and what we're working on>
