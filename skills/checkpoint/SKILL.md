@@ -1,32 +1,57 @@
 ---
 name: checkpoint
-description: This skill should be used when the user asks to "checkpoint", "wrap up session", "level-set", "save progress", "prepare to close", "generate continuation prompt", "session summary", "what did we do", or wants to cleanly close a session with documented changes, committed work, and a ready-to-paste continuation prompt for the next session.
+description: This skill should be used when the user asks to "checkpoint", "wrap up session", "level-set", "save progress", "prepare to close", "generate continuation prompt", "session summary", "what did we do", or wants to cleanly close a session with documented changes, committed work, and a ready-to-paste continuation prompt for the next session. Works in any Claude Code session — terminal, Telegram bot, IDE, or headless.
 ---
 
 # Checkpoint — Session Wrap-Up & Continuation
 
-Cleanly close a session by documenting changes, committing work, updating issues, and generating a continuation prompt. Run this before closing any bot session or terminal to preserve context.
+Cleanly close any Claude Code session by documenting changes, committing work, updating issues, and generating a continuation prompt that can be used to resume in a new session.
+
+Works in every context:
+- **Terminal sessions** — display prompt, save to disk
+- **Telegram bot sessions** — display + send to Telegram + save to disk
+- **Autonomous agents** — save to disk for auto-resume in a new window
+- **IDE sessions** — display prompt, save to disk
 
 ## The Checkpoint Sequence
 
-Execute these steps in order. Skip any step that doesn't apply.
+Execute these steps in order. Skip any step that doesn't apply to the current session.
 
 ### Step 1: Level-Set — What Happened
 
 Summarize the current session:
 
-1. **Read git log** for commits made in this session — `git log --oneline --since="$(ps -p $$ -o lstart= | xargs -I{} date -j -f '%a %b %d %T %Y' '{}' '+%Y-%m-%dT%H:%M:%S' 2>/dev/null || echo '12 hours ago')" 2>/dev/null || git log --oneline -20`
-2. **Read git diff** for uncommitted changes — `git diff --stat` and `git status --short`
-3. **Check task list** if any tasks were tracked
-4. **Compile summary** — list what was accomplished, what changed, what's pending
+1. **Detect environment:**
+   - Project path: current working directory
+   - Git branch: `git branch --show-current`
+   - Session type: check if `TELEGRAM_STATE_DIR` is set (bot) or not (terminal/IDE)
+   - If bot: read bot name from `$TELEGRAM_STATE_DIR/instructions.md` line 1
 
-Output format:
+2. **Read git log** for this session's commits:
+   ```
+   git log --oneline -20
+   ```
+
+3. **Read git diff** for uncommitted changes:
+   ```
+   git diff --stat
+   git status --short
+   ```
+
+4. **Check GitHub issues** for the repo if available:
+   ```
+   gh issue list --state open --limit 10
+   ```
+
+5. **Compile summary:**
+
 ```
 SESSION SUMMARY
 ===============
 Project: <project name>
-Bot: <bot name if telegram session>
-Duration: <approximate>
+Path: <project path>
+Branch: <branch>
+Session: <terminal | bot:<name> | IDE>
 
 Accomplished:
 - <what was done, with commit refs>
@@ -36,6 +61,9 @@ Files changed (uncommitted):
 
 Pending / unfinished:
 - <what was started but not completed>
+
+Open issues:
+- #<num> — <title>
 ```
 
 ### Step 2: Commit Pending Work
@@ -46,40 +74,39 @@ If there are uncommitted changes:
 2. Commit with descriptive message following the project's convention
 3. Push if the branch has a remote tracking branch
 
-If changes are incomplete/broken, stash instead: `git stash push -m "checkpoint: <description>"`
+If changes are incomplete or broken, stash instead:
+```
+git stash push -m "checkpoint: <description>"
+```
 
 ### Step 3: Update CHANGELOG
 
 If the project has a `CHANGELOG.md` and meaningful work was done:
 
 1. Read the current CHANGELOG format
-2. Add entries under the current version section (or create an unreleased section)
-3. Keep entries concise — one line per feature/fix
+2. Add entries under the current version or an "Unreleased" section
+3. One line per feature/fix — keep it concise
 4. Commit the CHANGELOG update
 
 ### Step 4: GitHub Issues
 
-Check for issue-worthy items:
+1. **Close completed issues** — if commits resolve an issue, close it with `gh`
+2. **Update in-progress issues** — add a progress comment
+3. **Create new issues** — for bugs found, TODOs discovered, or next steps
 
-1. **Close completed issues** — if commits reference issue numbers, close them with a comment
-2. **Update in-progress issues** — add comments on progress made
-3. **Create new issues** — for bugs found, TODOs discovered, or next steps identified
-
-Use `gh` CLI for all operations. Only create issues for non-trivial items.
+Only create issues for non-trivial items. Use `gh` CLI single-line commands.
 
 ### Step 5: Update Memory
 
-If working in a project with auto-memory:
+If the project has auto-memory enabled:
 
-1. Save any non-obvious decisions or context to memory
+1. Save non-obvious decisions or context to memory files
 2. Update stale memory entries discovered during the session
 3. Keep memories factual and useful for future sessions
 
 ### Step 6: Generate Continuation Prompt
 
-This is the most critical step. Generate a complete continuation prompt that another session (or the same bot after restart) can use to pick up exactly where this session left off.
-
-Format:
+Generate a complete continuation prompt that any new session can use to resume this work. This is the most critical step.
 
 ```markdown
 ## Continuation Prompt
@@ -88,103 +115,109 @@ Format:
 
 ---
 
-**Project:** <project name and path>
+**Project:** <name and absolute path>
 **Branch:** <current git branch>
-**Last commit:** <hash and message>
+**Last commit:** <hash — message>
+**Stash:** <if anything was stashed, note it here>
 
 **Context:**
 <2-3 sentences on what this project is and what we're working on>
 
 **What was just completed:**
-<bullet list of what this session accomplished>
+- <bullet list of what this session accomplished>
 
 **What's next (priority order):**
-1. <most important next task — be specific>
+1. <most important next task — be specific with file paths and issue numbers>
 2. <second task>
 3. <third task>
 
 **Key decisions made:**
-- <any non-obvious decisions that affect future work>
+- <non-obvious decisions that affect future work>
 
-**Open issues to work on:**
-- #<number> — <title> (status)
+**Open issues:**
+- #<number> — <title> (<status>)
 
 **Files to look at first:**
-- <file path> — <why>
+- <file path> — <why this file matters>
 
-**Commands to run:**
-- <any setup commands needed, e.g., npm run dev, git stash pop>
+**Commands to run first:**
+- <setup commands: npm run dev, git stash pop, cd <path>, etc.>
 
 ---
 ```
 
 ### Step 7: Save & Log the Continuation Prompt
 
-The continuation prompt must be persisted — not just displayed. Save it to disk so it can be reused automatically.
+The continuation prompt must be persisted to disk — not just displayed. A prompt only in a context window that's about to close is useless.
 
-1. **Save to project checkpoint log:**
+1. **Create directory** if needed:
+   ```
+   mkdir -p .claude/checkpoints
+   ```
+
+2. **Save timestamped checkpoint:**
    ```
    .claude/checkpoints/<YYYY-MM-DD>-<HH-MM>-<short-tag>.md
    ```
-   Where `<short-tag>` is a 2-3 word slug of what the session did (e.g., `dashboard-ui`, `autoresearch-skill`).
+   Where `<short-tag>` is a 2-3 word slug (e.g., `dashboard-ui`, `fix-auth-bug`).
 
-2. **Save latest as a quick-resume file:**
+3. **Save as LATEST** (always overwrite):
    ```
    .claude/checkpoints/LATEST.md
    ```
-   Always overwrite this file — it's the "last known good state" for instant resume.
 
-3. **Create `.claude/checkpoints/` directory** if it doesn't exist. Add `.claude/checkpoints/` to `.gitignore` if not already there — these are local working state, not repo content.
-
-4. **Log to fleet-wide checkpoint log** (if `TELEGRAM_STATE_DIR` is set):
+4. **Add to .gitignore** if not already there — checkpoints are local state:
    ```
-   ~/.claude/channels/checkpoint-log.jsonl
+   .claude/checkpoints/
+   ```
+
+5. **Log to global checkpoint ledger** (all projects, all sessions):
+   ```
+   ~/.claude/checkpoint-log.jsonl
    ```
    Append one JSON line:
    ```json
-   {"bot":"<name>","project":"<path>","timestamp":"<ISO>","commit":"<hash>","summary":"<one-line>","file":"<checkpoint-file-path>"}
+   {"project":"<path>","branch":"<branch>","session":"<terminal|bot:name>","timestamp":"<ISO>","commit":"<hash>","summary":"<one-line>","file":"<checkpoint-path>"}
    ```
-   This creates a fleet-wide audit trail of all bot session checkpoints.
+
+6. **If bot session** — also log to fleet ledger:
+   ```
+   ~/.claude/channels/checkpoint-log.jsonl
+   ```
 
 ### Output
 
-Display the full continuation prompt in the chat/terminal AND:
-- If running via Telegram — send it via the reply tool so the user has it on their phone
-- Always save to disk per Step 7 — even if not on Telegram
+- **Always** display the continuation prompt in the current session
+- **Always** save to disk (Steps 7.1-7.5)
+- **If Telegram bot** — also send via the reply tool to the user's chat
+- **If autonomous** — saving to disk IS the output; no human to display to
 
-### Auto-Resume Pattern
+### Auto-Resume Patterns
 
-To resume from the latest checkpoint in a new session:
-
+**Manual resume (any session):**
 ```
 Read .claude/checkpoints/LATEST.md and continue from where we left off.
 ```
 
-Or to resume a specific checkpoint:
-
+**Resume a specific checkpoint:**
 ```
 Read .claude/checkpoints/2026-03-24-11-30-dashboard-ui.md and continue.
 ```
 
-The fleet checkpoint log at `~/.claude/channels/checkpoint-log.jsonl` enables future features:
-- `/solocrew status` can show last checkpoint per bot
-- Command center dashboard can display checkpoint history
-- A PreCompact hook could auto-checkpoint before context compression
-- A scheduled trigger could auto-resume stale checkpoints in new sessions
+**Autonomous task chaining (the long-term goal):**
+```
+1. Agent picks up issue #7 from GitHub
+2. Works on it until done (or context limit)
+3. Checkpoint → saves state to LATEST.md
+4. New session starts → reads LATEST.md → picks up next issue
+5. Repeat
+```
 
-## Rules
-
-- **Always generate the continuation prompt** — even if nothing else applies. This is the core value of the skill.
-- **Be specific in next steps** — "work on the dashboard" is useless. "Implement the BotCard click-to-expand interaction per issue #7" is useful.
-- **Include file paths** — the next session starts cold. Specific paths save discovery time.
-- **Include commands** — if the project needs a dev server or build step, list it.
-- **Don't bloat the CHANGELOG** — only add entries for user-visible changes, not internal refactors unless significant.
-- **Commit before generating** — the continuation prompt should reference the latest committed state, not uncommitted drift.
-- **Always save to disk** — the continuation prompt is useless if it only exists in a context window that's about to be cleared.
+This pattern turns GitHub issues into a task queue that agents work through autonomously, checkpointing between each task to stay within context limits.
 
 ## Auto-Checkpoint on Context Limits
 
-For autonomous operation, add a PreCompact hook that auto-saves a checkpoint before context gets compressed. This ensures no context is ever truly lost:
+Add a PreCompact hook to auto-save before context compression:
 
 ```json
 {
@@ -192,11 +225,18 @@ For autonomous operation, add a PreCompact hook that auto-saves a checkpoint bef
     "PreCompact": [{
       "hooks": [{
         "type": "prompt",
-        "prompt": "Context is about to be compacted. Before it happens, save a checkpoint: summarize the current task state, pending work, and key decisions to .claude/checkpoints/LATEST.md. Keep it concise — this will be read back after compaction."
+        "prompt": "Context is about to be compacted. Save a checkpoint: summarize current task state, pending work, and key decisions to .claude/checkpoints/LATEST.md and append to ~/.claude/checkpoint-log.jsonl. Keep it concise — this will be read back after compaction."
       }]
     }]
   }
 }
 ```
 
-This turns every context compression into a checkpoint opportunity — the bot auto-saves state, compacts, then can read LATEST.md to restore context.
+## Rules
+
+- **Always generate the continuation prompt** — even if nothing else applies
+- **Always save to disk** — a prompt only in context is useless after session close
+- **Be specific in next steps** — include file paths, issue numbers, exact commands
+- **Commit before generating** — reference committed state, not uncommitted drift
+- **Don't bloat CHANGELOG** — only user-visible changes
+- **Environment-agnostic** — the same checkpoint file works whether resumed in a terminal, bot, or IDE session
