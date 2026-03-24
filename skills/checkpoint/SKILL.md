@@ -118,9 +118,59 @@ Format:
 ---
 ```
 
+### Step 7: Save & Log the Continuation Prompt
+
+The continuation prompt must be persisted — not just displayed. Save it to disk so it can be reused automatically.
+
+1. **Save to project checkpoint log:**
+   ```
+   .claude/checkpoints/<YYYY-MM-DD>-<HH-MM>-<short-tag>.md
+   ```
+   Where `<short-tag>` is a 2-3 word slug of what the session did (e.g., `dashboard-ui`, `autoresearch-skill`).
+
+2. **Save latest as a quick-resume file:**
+   ```
+   .claude/checkpoints/LATEST.md
+   ```
+   Always overwrite this file — it's the "last known good state" for instant resume.
+
+3. **Create `.claude/checkpoints/` directory** if it doesn't exist. Add `.claude/checkpoints/` to `.gitignore` if not already there — these are local working state, not repo content.
+
+4. **Log to fleet-wide checkpoint log** (if `TELEGRAM_STATE_DIR` is set):
+   ```
+   ~/.claude/channels/checkpoint-log.jsonl
+   ```
+   Append one JSON line:
+   ```json
+   {"bot":"<name>","project":"<path>","timestamp":"<ISO>","commit":"<hash>","summary":"<one-line>","file":"<checkpoint-file-path>"}
+   ```
+   This creates a fleet-wide audit trail of all bot session checkpoints.
+
 ### Output
 
-Display the full continuation prompt in the chat/terminal AND — if running via Telegram — send it via the reply tool so the user has it on their phone for copy-paste.
+Display the full continuation prompt in the chat/terminal AND:
+- If running via Telegram — send it via the reply tool so the user has it on their phone
+- Always save to disk per Step 7 — even if not on Telegram
+
+### Auto-Resume Pattern
+
+To resume from the latest checkpoint in a new session:
+
+```
+Read .claude/checkpoints/LATEST.md and continue from where we left off.
+```
+
+Or to resume a specific checkpoint:
+
+```
+Read .claude/checkpoints/2026-03-24-11-30-dashboard-ui.md and continue.
+```
+
+The fleet checkpoint log at `~/.claude/channels/checkpoint-log.jsonl` enables future features:
+- `/solocrew status` can show last checkpoint per bot
+- Command center dashboard can display checkpoint history
+- A PreCompact hook could auto-checkpoint before context compression
+- A scheduled trigger could auto-resume stale checkpoints in new sessions
 
 ## Rules
 
@@ -130,3 +180,23 @@ Display the full continuation prompt in the chat/terminal AND — if running via
 - **Include commands** — if the project needs a dev server or build step, list it.
 - **Don't bloat the CHANGELOG** — only add entries for user-visible changes, not internal refactors unless significant.
 - **Commit before generating** — the continuation prompt should reference the latest committed state, not uncommitted drift.
+- **Always save to disk** — the continuation prompt is useless if it only exists in a context window that's about to be cleared.
+
+## Auto-Checkpoint on Context Limits
+
+For autonomous operation, add a PreCompact hook that auto-saves a checkpoint before context gets compressed. This ensures no context is ever truly lost:
+
+```json
+{
+  "hooks": {
+    "PreCompact": [{
+      "hooks": [{
+        "type": "prompt",
+        "prompt": "Context is about to be compacted. Before it happens, save a checkpoint: summarize the current task state, pending work, and key decisions to .claude/checkpoints/LATEST.md. Keep it concise — this will be read back after compaction."
+      }]
+    }]
+  }
+}
+```
+
+This turns every context compression into a checkpoint opportunity — the bot auto-saves state, compacts, then can read LATEST.md to restore context.
